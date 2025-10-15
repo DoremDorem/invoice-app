@@ -1,0 +1,43 @@
+
+        /* General print styles to hide controls and optimize layout for saving as PDF */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body { margin: 0; padding: 0; }
+            #invoice-container { box-shadow: none !important; max-width: none !important; padding: 0 !important; }
+            /* Hide border and padding for inputs/textareas in print to make them look like static text */
+            .invoice-input { border: none !important; padding: 0.25rem 0 !important; } 
+            .invoice-table th, .invoice-table td { padding: 0.75rem 1rem !important; }
+        }
+
+        /* Custom input styling for a clean look */
+        .invoice-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.15s ease-in-out;
+        }
+        .invoice-input:focus {
+            border-color: #1e3a8a;
+            outline: none;
+            box-shadow: 0 0 0 1px #1e3a8a;
+        }
+
+        /* Ensure textareas are easily readable but don't look like inputs in print mode */
+        textarea.invoice-input {
+            resize: none;
+        }
+
+        /* Temporary style for replacement elements to ensure proper display alignment */
+        .static-replacement {
+            border: none !important;
+            padding: 0.5rem !important; /* Keep some padding to prevent clipping */
+            background: transparent !important;
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+        }
+

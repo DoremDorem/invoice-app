@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple HTML Invoice</title>
+    <!-- Load Tailwind CSS for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./index.css">
+</head>
+<body class="bg-bg-light min-h-screen p-4 sm:p-8 font-sans">
+
+    <!-- Main Content Wrapper -->
+    <div id="invoice-container" class="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-6 sm:p-10 lg:p-12 transition-all duration-300">
+
+        <!-- Header, Logo, and Controls -->
+        <header class="mb-8 border-b pb-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <div class="flex flex-col space-y-3">
+                <!-- Logo Display/Placeholder -->
+                <img id="companyLogo" class="max-w-[150px] max-h-[80px] h-auto w-auto object-contain rounded-lg border border-gray-200 p-1" src="https://placehold.co/150x80/1e3a8a/ffffff?text=Your+Logo" alt="Company Logo">
+
+                <!-- Logo Uploader -->
+                <div class="logo-input-area no-print">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Upload Company Logo (Optional)</label>
+                    <input type="file" id="logoUpload" accept="image/*" class="text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-blue file:text-white hover:file:bg-blue-800 cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Title and Controls -->
+            <div class="md:text-right flex flex-col items-start md:items-end">
+                <h1 class="text-4xl font-bold text-brand-blue mb-4">Invoice</h1>
+                <div class="space-x-4 flex no-print">
+                    <button id="addItemBtn" class="bg-brand-accent hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 text-sm">
+                        + Add Item
+                    </button>
+                    <button id="downloadPdfBtn" class="bg-brand-blue hover:bg-blue-900 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 text-sm">
+                        Download PDF
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Address and Info Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="col-span-1">
+                <h2 class="text-lg font-bold text-brand-blue mb-2">From:</h2>
+                <textarea id="vendorInfo" rows="4" class="invoice-input resize-none" placeholder="Your Company Name&#10;Your Address&#10;Your Contact Info">Your Business Name
+101 Service Ave, Business City, 12345
+contact@yourbusiness.com</textarea>
+            </div>
+            <div class="col-span-1">
+                <h2 class="text-lg font-bold text-brand-blue mb-2">Bill To:</h2>
+                <textarea id="clientInfo" rows="4" class="invoice-input resize-none" placeholder="Client Name&#10;Client Address&#10;Client Contact Info">Client Company Ltd.
+456 Commerce St, Client Town, 67890
+billing@clientcompany.com</textarea>
+            </div>
+            <div class="col-span-1 space-y-3">
+                <div id="invoiceNumberWrapper" class="p-3 bg-gray-50 rounded-lg">
+                    <label for="invoiceNumber" class="block text-xs font-medium text-gray-500 mb-1">Invoice #</label>
+                    <input type="text" id="invoiceNumber" value="INV-001" class="invoice-input bg-transparent font-semibold">
+                </div>
+                <div id="invoiceDateWrapper" class="p-3 bg-gray-50 rounded-lg">
+                    <label for="invoiceDate" class="block text-xs font-medium text-gray-500 mb-1">Date Issued</label>
+                    <input type="date" id="invoiceDate" class="invoice-input bg-transparent">
+                </div>
+            </div>
+        </section>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto shadow-lg rounded-xl mb-8 border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 invoice-table">
+                <thead class="bg-brand-blue text-white">
+                    <tr>
+                        <th class="w-1/2 p-3 text-left rounded-tl-xl">Description</th>
+                        <th class="w-1/6 p-3 text-center">Qty</th>
+                        <th class="w-1/6 p-3 text-right">Unit Price</th>
+                        <th class="w-1/6 p-3 text-right rounded-tr-xl">Total</th>
+                        <th class="w-12 p-3 no-print"></th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItems" class="bg-white divide-y divide-gray-100 text-sm">
+                    <!-- Item rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals and Notes Section -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-2">
+                <h2 class="text-lg font-bold text-brand-blue mb-2">Payment Terms & Notes:</h2>
+                <textarea id="invoiceNotes" rows="4" class="invoice-input resize-none" placeholder="e.g., Payment due Net 30. Thank you for your business.">Payment is expected within 30 days of the invoice date.</textarea>
+            </div>
+
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between items-center pb-2">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span id="subtotalDisplay" class="font-medium text-gray-800">₹0.00</span>
+                </div>
+                <div class="flex justify-between items-center pb-2 border-b border-gray-200">
+                    <span class="text-gray-600">Tax (<input type="number" id="taxRate" value="7" min="0" max="100" class="w-12 invoice-input p-0.5 inline-block text-center text-xs"> %):</span>
+                    <span id="taxDisplay" class="font-medium text-gray-800">₹0.00</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t-2 border-brand-blue">
+                    <span class="text-xl font-bold text-brand-blue">Grand Total:</span>
+                    <span id="grandTotalDisplay" class="text-xl font-bold text-brand-accent">₹0.00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer for Print View -->
+        <footer class="mt-12 text-center text-xs text-gray-500 pt-8 border-t border-gray-200">
+            Invoice generated on <span id="footerDate"></span>. Thank you for your continued partnership.
+        </footer>
+    </div>
+
+
+    <script src="./index.js"></script>
+</body>
+</html>
